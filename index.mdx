@@ -1,97 +1,78 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: 'Foosball tracker'
+description: 'Track games, rankings, and statistics for your foosball table'
 ---
 
-## Setting up
+## Welcome to foosball tracker
 
-Get your documentation site up and running in minutes.
+A Next.js application for tracking foosball games with ELO ratings, player statistics, and comprehensive analytics. Built with modern web technologies and designed for competitive foosball environments.
 
 <Card
-  title="Start here"
+  title="Get started"
   icon="rocket"
   href="/quickstart"
   horizontal
 >
-  Follow our three step quickstart guide.
+  Set up your foosball tracker in minutes
 </Card>
 
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
+## Core features
 
 <Columns cols={2}>
   <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
+    title="ELO rating system"
+    icon="chart-line"
+    href="/features/elo-system"
   >
-    Edit your docs locally and preview them in real time.
+    Advanced ELO calculations with modifiers for different game types
   </Card>
   <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
+    title="Game logging"
+    icon="gamepad"
+    href="/features/game-logging"
   >
-    Customize the design and colors of your site to match your brand.
-  </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+    Record 1v1, 2v1, and 2v2 matches with automatic ELO updates
   </Card>
   <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
+    title="Leaderboard"
+    icon="trophy"
+    href="/features/leaderboard"
   >
-    Auto-generate API documentation from OpenAPI specifications.
+    Real-time rankings with player tags and achievements
+  </Card>
+  <Card
+    title="Statistics"
+    icon="chart-bar"
+    href="/features/statistics"
+  >
+    Detailed analytics, heatmaps, and performance insights
   </Card>
 </Columns>
 
-## Create beautiful pages
+## Tech stack
 
-Everything you need to create world-class documentation.
+Built with modern, production-ready technologies:
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+- **Framework**: Next.js 15 with App Router
+- **Database**: Neon PostgreSQL with serverless driver
+- **Authentication**: Clerk for user management
+- **UI**: Tailwind CSS with shadcn/ui components
+- **Charts**: Recharts for data visualization
+- **Deployment**: Vercel
 
-## Need inspiration?
+## Quick links
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/quickstart">
+    Get your instance running
+  </Card>
+  <Card title="Configuration" icon="gear" href="/configuration/environment">
+    Configure database and authentication
+  </Card>
+  <Card title="Admin panel" icon="shield" href="/features/admin">
+    Manage players and adjust ratings
+  </Card>
+  <Card title="API reference" icon="code" href="/api-reference/games">
+    Integrate with the API
+  </Card>
+</CardGroup>
