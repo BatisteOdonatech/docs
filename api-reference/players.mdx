@@ -1,0 +1,250 @@
+---
+title: 'Players API'
+description: 'Endpoints for managing players'
+---
+
+## List players
+
+Retrieve all active players with their statistics.
+
+```http
+GET /api/players
+```
+
+### Response
+
+Returns all enabled players ordered by current ELO (highest to lowest).
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Alice",
+    "current_elo": 1350,
+    "games_played": 42,
+    "wins": 28,
+    "losses": 14,
+    "win_rate": 66.7,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-12-05T16:00:00Z"
+  }
+]
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | integer | Unique player identifier |
+| `name` | string | Player display name |
+| `current_elo` | integer | Current ELO rating |
+| `games_played` | integer | Total games participated in |
+| `wins` | integer | Number of victories |
+| `losses` | integer | Number of defeats |
+| `win_rate` | number | Win percentage (0-100) |
+| `created_at` | string | ISO 8601 timestamp of player creation |
+| `updated_at` | string | ISO 8601 timestamp of last update |
+
+### Query parameters
+
+None currently supported. Future versions may add filtering and pagination.
+
+## Get player by name
+
+Retrieve detailed information for a specific player.
+
+```http
+GET /api/player/[name]
+```
+
+### Path parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `name` | string | Player name (URL-encoded) |
+
+### Example
+
+```http
+GET /api/player/Alice
+```
+
+### Response
+
+```json
+{
+  "id": 1,
+  "name": "Alice",
+  "current_elo": 1350,
+  "games_played": 42,
+  "wins": 28,
+  "losses": 14,
+  "win_rate": 66.7,
+  "created_at": "2024-01-01T00:00:00Z",
+  "updated_at": "2024-12-05T16:00:00Z",
+  "elo_history": [
+    {
+      "id": 1,
+      "old_elo": 1200,
+      "new_elo": 1215,
+      "elo_change": 15,
+      "game_id": 1,
+      "created_at": "2024-01-01T10:00:00Z"
+    }
+  ],
+  "recent_games": [
+    {
+      "id": 42,
+      "game_type": "2v2",
+      "team1_score": 10,
+      "team2_score": 7,
+      "winner": 1,
+      "created_at": "2024-12-05T16:00:00Z"
+    }
+  ]
+}
+```
+
+### Additional fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `elo_history` | array | Complete ELO change history |
+| `recent_games` | array | Last 20 games played |
+
+### Error responses
+
+#### 404 Not Found
+
+```json
+{
+  "error": "Player not found"
+}
+```
+
+Player with the specified name doesn't exist.
+
+## Create player
+
+Players are created automatically when logging games. There is no direct endpoint to create players.
+
+To create a player:
+1. Log a game with the player's name
+2. The system will create the player automatically
+3. Initial ELO will be set to `STARTING_ELO` (default: 1200)
+
+## Update player
+
+Player statistics are updated automatically through game logging. Manual updates require admin access.
+
+### Admin: Adjust player ELO
+
+```http
+POST /api/admin/players/[id]/adjust-elo
+```
+
+Requires admin authentication.
+
+### Path parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | integer | Player ID |
+
+### Request body
+
+```json
+{
+  "newElo": 1500
+}
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "player": {
+    "id": 1,
+    "name": "Alice",
+    "current_elo": 1500
+  }
+}
+```
+
+### Error responses
+
+#### 401 Unauthorized
+
+```json
+{
+  "error": "Admin access required"
+}
+```
+
+User is not authenticated as an admin.
+
+#### 400 Bad Request
+
+```json
+{
+  "error": "Invalid ELO value"
+}
+```
+
+ELO value is not a valid number.
+
+## Player tags
+
+Player tags are calculated dynamically based on statistics. They are not stored in the database but computed on request.
+
+### Get player tags
+
+Tags are included in the leaderboard response. To get tags for a specific player, use the leaderboard endpoint and filter client-side.
+
+### Available tags
+
+- **RISING**: Won last 3 games in a row
+- **BUMP**: Earned 20+ ELO in last game
+- **BALANCED**: 48-52% win rate
+- **UNFAIR**: >80% win rate
+- **RECORD**: Highest ELO ever reached
+- **ZHERO**: Most games with 0 score
+
+## Example requests
+
+### List all players
+
+```bash
+curl https://your-domain.com/api/players
+```
+
+### Get specific player
+
+```bash
+curl https://your-domain.com/api/player/Alice
+```
+
+### Adjust player ELO (admin)
+
+```bash
+curl -X POST https://your-domain.com/api/admin/players/1/adjust-elo \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_ADMIN_CLERK_TOKEN" \
+  -d '{
+    "newElo": 1500
+  }'
+```
+
+## Data consistency
+
+Player statistics are updated transactionally with game creation:
+- ELO changes are calculated before database writes
+- All updates succeed or fail together
+- No partial updates occur
+
+## Performance considerations
+
+- Player list queries are optimized with database indexes
+- ELO history is limited to recent entries for performance
+- Large player pools (100+) may require pagination (future feature)
