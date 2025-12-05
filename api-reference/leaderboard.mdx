@@ -1,0 +1,269 @@
+---
+title: 'Leaderboard API'
+description: 'Endpoint for retrieving player rankings'
+---
+
+## Get leaderboard
+
+Retrieve all active players ranked by ELO rating.
+
+```http
+GET /api/leaderboard
+```
+
+### Response
+
+Returns all enabled players with their statistics and dynamic tags, ordered by current ELO (highest to lowest).
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Alice",
+    "current_elo": 1350,
+    "games_played": 42,
+    "wins": 28,
+    "losses": 14,
+    "win_rate": 66.7,
+    "tags": [
+      {
+        "label": "RISING",
+        "emoji": "📈",
+        "color": "bg-blue-600",
+        "description": "Won the last 3 games in a row",
+        "animate": false
+      },
+      {
+        "label": "BUMP",
+        "emoji": "⚡",
+        "color": "bg-yellow-600",
+        "description": "Earned 20+ ELO points in the last game",
+        "animate": true
+      }
+    ],
+    "rank": 1
+  }
+]
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | integer | Unique player identifier |
+| `name` | string | Player display name |
+| `current_elo` | integer | Current ELO rating |
+| `games_played` | integer | Total games participated in |
+| `wins` | integer | Number of victories |
+| `losses` | integer | Number of defeats |
+| `win_rate` | number | Win percentage (0-100) |
+| `tags` | array | Dynamic achievement tags |
+| `rank` | integer | Current leaderboard position (1-indexed) |
+
+### Tag object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `label` | string | Tag name (e.g., "RISING") |
+| `emoji` | string | Visual emoji indicator |
+| `color` | string | Tailwind CSS color class |
+| `description` | string | Tooltip text explaining the tag |
+| `animate` | boolean | Whether the tag should pulse/animate |
+
+## Tag types
+
+### RISING 📈
+
+Player won their last 3 games in a row.
+
+**Criteria**: 3 consecutive wins
+
+**Color**: Blue (`bg-blue-600`)
+
+### BUMP ⚡
+
+Player earned 20+ ELO points in their most recent game.
+
+**Criteria**: Last game ELO change ≥ +20
+
+**Color**: Yellow (`bg-yellow-600`)
+
+**Animation**: Pulsing effect
+
+### BALANCED ⚖️
+
+Player has a balanced win rate between 48-52%.
+
+**Criteria**: Win rate between 48% and 52%
+
+**Color**: Green (`bg-green-600`)
+
+### UNFAIR 👑
+
+Player dominates with over 80% win rate.
+
+**Criteria**: Win rate > 80%
+
+**Color**: Purple (`bg-purple-600`)
+
+### RECORD 🏆
+
+Player holds the highest ELO ever reached.
+
+**Criteria**: Current ELO equals all-time high
+
+**Color**: Orange (`bg-orange-600`)
+
+### ZHERO 💀
+
+Player has the most games where they scored 0 points.
+
+**Criteria**: Most 10-0 losses
+
+**Color**: Red (`bg-red-600`)
+
+## Ranking logic
+
+Players are ranked by:
+
+1. **Primary**: Current ELO (descending)
+2. **Tiebreaker**: Player ID (ascending)
+
+Disabled players are excluded from the leaderboard.
+
+## Example requests
+
+### Get full leaderboard
+
+```bash
+curl https://your-domain.com/api/leaderboard
+```
+
+### Response example
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Alice",
+    "current_elo": 1350,
+    "games_played": 42,
+    "wins": 28,
+    "losses": 14,
+    "win_rate": 66.7,
+    "tags": [
+      {
+        "label": "RISING",
+        "emoji": "📈",
+        "color": "bg-blue-600",
+        "description": "Won the last 3 games in a row",
+        "animate": false
+      }
+    ],
+    "rank": 1
+  },
+  {
+    "id": 2,
+    "name": "Bob",
+    "current_elo": 1280,
+    "games_played": 38,
+    "wins": 19,
+    "losses": 19,
+    "win_rate": 50.0,
+    "tags": [
+      {
+        "label": "BALANCED",
+        "emoji": "⚖️",
+        "color": "bg-green-600",
+        "description": "Has a balanced 48-52% win rate",
+        "animate": false
+      }
+    ],
+    "rank": 2
+  }
+]
+```
+
+## Filtering and pagination
+
+Currently not supported. All active players are returned in a single response.
+
+Future versions may add:
+- Pagination (`?page=1&limit=20`)
+- Filtering by win rate, games played, etc.
+- Search by player name
+
+## Performance
+
+- Query is optimized with database indexes on ELO
+- Tag calculation is performed server-side
+- Response is cached for 30 seconds (future feature)
+- Typical response time: <100ms for 50 players
+
+## Real-time updates
+
+The leaderboard does not update in real-time. Clients must:
+- Refresh the page to see new data
+- Poll the endpoint periodically
+- Implement WebSocket updates (future feature)
+
+## Use cases
+
+### Display rankings
+
+```javascript
+fetch('/api/leaderboard')
+  .then(res => res.json())
+  .then(players => {
+    players.forEach(player => {
+      console.log(`${player.rank}. ${player.name} - ${player.current_elo} ELO`)
+    })
+  })
+```
+
+### Find top player
+
+```javascript
+fetch('/api/leaderboard')
+  .then(res => res.json())
+  .then(players => {
+    const topPlayer = players[0]
+    console.log(`Champion: ${topPlayer.name} with ${topPlayer.current_elo} ELO`)
+  })
+```
+
+### Filter by tag
+
+```javascript
+fetch('/api/leaderboard')
+  .then(res => res.json())
+  .then(players => {
+    const risingPlayers = players.filter(p => 
+      p.tags.some(tag => tag.label === 'RISING')
+    )
+    console.log('Rising stars:', risingPlayers)
+  })
+```
+
+## Error responses
+
+### 500 Internal Server Error
+
+```json
+{
+  "error": "Failed to fetch leaderboard",
+  "details": "Database connection error"
+}
+```
+
+Server-side errors (database issues, calculation errors, etc.)
+
+## Data freshness
+
+Leaderboard data reflects:
+- All games logged up to the request time
+- Current ELO ratings from latest games
+- Real-time tag calculations
+- Enabled players only
+
+Disabled players are excluded even if they have high ELO ratings.
