@@ -1,0 +1,265 @@
+---
+title: 'ELO configuration'
+description: 'Customize ELO rating system parameters'
+---
+
+## Overview
+
+The ELO rating system can be customized through the configuration file at `lib/config.ts`. These settings affect how ratings are calculated and game scores are validated.
+
+## Configuration file
+
+```typescript lib/config.ts
+export const ELO_CONFIG = {
+  STARTING_ELO: 1200,
+  K_FACTOR: 30,
+  MIN_SCORE: 0,
+  MAX_SCORE: 10,
+  WINNING_SCORE: 10,
+} as const
+```
+
+## Parameters
+
+### STARTING_ELO
+
+Initial ELO rating for new players.
+
+**Default**: `1200`
+
+**Typical range**: 1000-1500
+
+**Impact**:
+- Higher values: New players start with more "rating capital"
+- Lower values: New players must prove themselves
+- Standard chess uses 1200-1500
+
+**When to change**:
+- Adjusting for skill level of your player pool
+- Matching ratings from another system
+- Resetting the rating scale
+
+### K_FACTOR
+
+Determines how much ratings change per game.
+
+**Default**: `30`
+
+**Typical range**: 16-40
+
+**Impact**:
+- Higher K-factor: Larger rating swings, faster convergence
+- Lower K-factor: Smaller rating swings, more stable ratings
+- Standard chess uses 16-32 depending on player level
+
+**Comparison**:
+- `K=16`: Very stable, slow adjustment (chess masters)
+- `K=24`: Moderate adjustment (chess intermediate)
+- `K=32`: Fast adjustment (chess beginners)
+- `K=40`: Very volatile, quick convergence
+
+**When to change**:
+- Small player pool: Increase K-factor for faster adjustment
+- Large player pool: Decrease K-factor for stability
+- Casual play: Higher K-factor for excitement
+- Competitive play: Lower K-factor for accuracy
+
+### MIN_SCORE
+
+Minimum valid score for a team.
+
+**Default**: `0`
+
+**Fixed**: Should not be changed
+
+**Purpose**: Validates game scores and enables shutout detection
+
+### MAX_SCORE
+
+Maximum valid score for a team.
+
+**Default**: `10`
+
+**Fixed**: Should not be changed without updating game logic
+
+**Purpose**: Enforces foosball scoring rules
+
+### WINNING_SCORE
+
+Score required to win a game.
+
+**Default**: `10`
+
+**Fixed**: Must match `MAX_SCORE`
+
+**Purpose**: Determines game winner and validates scores
+
+## Validation configuration
+
+```typescript lib/config.ts
+export const VALIDATION = {
+  MAX_PLAYER_NAME_LENGTH: 50,
+  PLAYER_NAME_REGEX: /^[a-zA-Z0-9\s\-_]+$/,
+} as const
+```
+
+### MAX_PLAYER_NAME_LENGTH
+
+Maximum characters allowed in player names.
+
+**Default**: `50`
+
+**Recommended range**: 20-100
+
+**Impact**: Database storage and UI display
+
+### PLAYER_NAME_REGEX
+
+Regular expression for valid player names.
+
+**Default**: `/^[a-zA-Z0-9\s\-_]+$/`
+
+**Allowed characters**:
+- Letters (a-z, A-Z)
+- Numbers (0-9)
+- Spaces
+- Hyphens (-)
+- Underscores (_)
+
+**When to change**: To support international characters or special symbols
+
+## Modifying configuration
+
+<Steps>
+<Step title="Edit config file">
+Open `lib/config.ts` in your editor.
+</Step>
+
+<Step title="Update values">
+Modify the desired parameters:
+
+```typescript
+export const ELO_CONFIG = {
+  STARTING_ELO: 1500,  // Changed from 1200
+  K_FACTOR: 24,        // Changed from 30
+  MIN_SCORE: 0,
+  MAX_SCORE: 10,
+  WINNING_SCORE: 10,
+} as const
+```
+</Step>
+
+<Step title="Restart the server">
+Changes require a server restart to take effect.
+</Step>
+
+<Step title="Test changes">
+Log a test game and verify ELO calculations are correct.
+</Step>
+</Steps>
+
+## Impact on existing data
+
+<Warning>
+Changing configuration values does not retroactively affect existing games or ELO ratings.
+</Warning>
+
+### STARTING_ELO changes
+
+- Only affects new players created after the change
+- Existing players keep their current ELO
+- Consider using ELO normalization if needed
+
+### K_FACTOR changes
+
+- Affects all future games immediately
+- Past games remain unchanged
+- Rating convergence speed will change
+
+## Recommended configurations
+
+### Casual play (high volatility)
+
+```typescript
+export const ELO_CONFIG = {
+  STARTING_ELO: 1200,
+  K_FACTOR: 40,  // Large swings for excitement
+  MIN_SCORE: 0,
+  MAX_SCORE: 10,
+  WINNING_SCORE: 10,
+} as const
+```
+
+### Competitive play (stable ratings)
+
+```typescript
+export const ELO_CONFIG = {
+  STARTING_ELO: 1500,
+  K_FACTOR: 20,  // Smaller swings for accuracy
+  MIN_SCORE: 0,
+  MAX_SCORE: 10,
+  WINNING_SCORE: 10,
+} as const
+```
+
+### Small player pool (fast convergence)
+
+```typescript
+export const ELO_CONFIG = {
+  STARTING_ELO: 1200,
+  K_FACTOR: 32,  // Faster adjustment
+  MIN_SCORE: 0,
+  MAX_SCORE: 10,
+  WINNING_SCORE: 10,
+} as const
+```
+
+### Large player pool (slow convergence)
+
+```typescript
+export const ELO_CONFIG = {
+  STARTING_ELO: 1200,
+  K_FACTOR: 24,  // More stable ratings
+  MIN_SCORE: 0,
+  MAX_SCORE: 10,
+  WINNING_SCORE: 10,
+} as const
+```
+
+## Testing configuration changes
+
+After modifying configuration:
+
+1. **Log test games**: Record several games with known outcomes
+2. **Verify calculations**: Check ELO changes match expectations
+3. **Monitor distribution**: Ensure ratings spread appropriately
+4. **Adjust if needed**: Fine-tune based on results
+
+## Advanced customization
+
+For more complex changes (e.g., dynamic K-factors based on games played), modify the calculation logic in `lib/elo.ts`:
+
+```typescript lib/elo.ts
+// Example: Dynamic K-factor based on games played
+function getKFactor(gamesPlayed: number): number {
+  if (gamesPlayed < 20) return 40  // New players
+  if (gamesPlayed < 50) return 32  // Intermediate
+  return 24  // Experienced
+}
+```
+
+<Note>
+Advanced customizations require code changes and thorough testing.
+</Note>
+
+## Best practices
+
+<Tip>
+Start with default values and adjust based on observed rating distribution after 50+ games.
+</Tip>
+
+1. **Document changes**: Keep a record of configuration modifications
+2. **Test thoroughly**: Verify calculations before deploying
+3. **Communicate**: Inform players of rating system changes
+4. **Monitor impact**: Track rating distribution over time
+5. **Be consistent**: Avoid frequent configuration changes
