@@ -1,0 +1,254 @@
+---
+title: 'Games API'
+description: 'Endpoints for managing foosball games'
+---
+
+## List games
+
+Retrieve recent games with player information.
+
+```http
+GET /api/games
+```
+
+### Response
+
+Returns the 50 most recent games, ordered by creation date (newest first).
+
+```json
+[
+  {
+    "id": 123,
+    "game_type": "2v2",
+    "team1_player1_id": 1,
+    "team1_player2_id": 2,
+    "team1_score": 10,
+    "team2_player1_id": 3,
+    "team2_player2_id": 4,
+    "team2_score": 7,
+    "winner": 1,
+    "recorded_by_clerk_id": "user_2abc123",
+    "recorded_by_name": "John Doe",
+    "created_at": "2024-12-05T16:00:00Z",
+    "team1_player1_name": "Alice",
+    "team1_player2_name": "Bob",
+    "team2_player1_name": "Charlie",
+    "team2_player2_name": "Diana"
+  }
+]
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | integer | Unique game identifier |
+| `game_type` | string | Game format: `1v1`, `2v1`, or `2v2` |
+| `team1_player1_id` | integer | First player on team 1 |
+| `team1_player2_id` | integer\|null | Second player on team 1 (null for 1v1) |
+| `team1_score` | integer | Team 1 final score (0-10) |
+| `team2_player1_id` | integer | First player on team 2 |
+| `team2_player2_id` | integer\|null | Second player on team 2 (null for 1v1 and 2v1) |
+| `team2_score` | integer | Team 2 final score (0-10) |
+| `winner` | integer | Winning team (1 or 2) |
+| `recorded_by_clerk_id` | string | Clerk user ID who logged the game |
+| `recorded_by_name` | string | Display name of user who logged the game |
+| `created_at` | string | ISO 8601 timestamp |
+| `team1_player1_name` | string | Name of first player on team 1 |
+| `team1_player2_name` | string\|null | Name of second player on team 1 |
+| `team2_player1_name` | string | Name of first player on team 2 |
+| `team2_player2_name` | string\|null | Name of second player on team 2 |
+
+## Create game
+
+Log a new foosball game.
+
+```http
+POST /api/games
+```
+
+### Authentication
+
+Requires a valid Clerk session. Include the Clerk session token in the request.
+
+### Request body
+
+```json
+{
+  "gameType": "2v2",
+  "team1Player1": "Alice",
+  "team1Player2": "Bob",
+  "team2Player1": "Charlie",
+  "team2Player2": "Diana",
+  "team1Score": 10,
+  "team2Score": 7
+}
+```
+
+### Request fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `gameType` | string | Yes | Game format: `1v1`, `2v1`, or `2v2` |
+| `team1Player1` | string | Yes | First player on team 1 |
+| `team1Player2` | string | Conditional | Second player on team 1 (required for 2v2, optional for 2v1) |
+| `team2Player1` | string | Yes | First player on team 2 |
+| `team2Player2` | string | Conditional | Second player on team 2 (required for 2v2, optional for 2v1) |
+| `team1Score` | integer | Yes | Team 1 final score (0-10) |
+| `team2Score` | integer | Yes | Team 2 final score (0-10) |
+
+### Validation rules
+
+- One team must score exactly 10 points
+- The other team must score between 0 and 9 points
+- Player names must match `PLAYER_NAME_REGEX` pattern
+- Player names must not exceed `MAX_PLAYER_NAME_LENGTH`
+- Game type must match player configuration:
+  - `1v1`: Only `team1Player1` and `team2Player1`
+  - `2v1`: Three players total (one team has two players)
+  - `2v2`: All four player fields required
+
+### Response
+
+Returns the created game object with calculated ELO changes.
+
+```json
+{
+  "id": 124,
+  "game_type": "2v2",
+  "team1_player1_id": 1,
+  "team1_player2_id": 2,
+  "team1_score": 10,
+  "team2_player1_id": 3,
+  "team2_player2_id": 4,
+  "team2_score": 7,
+  "winner": 1,
+  "recorded_by_clerk_id": "user_2abc123",
+  "recorded_by_name": "John Doe",
+  "created_at": "2024-12-05T16:30:00Z"
+}
+```
+
+### Side effects
+
+Creating a game triggers:
+
+1. **Player creation**: New players are created automatically if names don't exist
+2. **ELO calculation**: Ratings are calculated based on game outcome
+3. **ELO history**: New entries are added to ELO history for each player
+4. **Statistics update**: Player stats (games played, wins, losses) are updated
+5. **Modifiers applied**: Shutout bonus (10-0) and 2v1 adjustments are applied
+
+### Error responses
+
+#### 401 Unauthorized
+
+```json
+{
+  "error": "Authentication required to log games"
+}
+```
+
+User must be signed in with Clerk.
+
+#### 400 Bad Request
+
+```json
+{
+  "error": "Invalid game data",
+  "details": "Winner must score exactly 10 points"
+}
+```
+
+Common validation errors:
+- Invalid score (winner doesn't have 10 points)
+- Invalid player name format
+- Player name too long
+- Game type doesn't match player count
+- Missing required fields
+
+#### 500 Internal Server Error
+
+```json
+{
+  "error": "Failed to create game",
+  "details": "Database connection error"
+}
+```
+
+Server-side errors (database issues, calculation errors, etc.)
+
+## Example requests
+
+### 1v1 game
+
+```bash
+curl -X POST https://your-domain.com/api/games \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+  -d '{
+    "gameType": "1v1",
+    "team1Player1": "Alice",
+    "team2Player1": "Bob",
+    "team1Score": 10,
+    "team2Score": 8
+  }'
+```
+
+### 2v1 game
+
+```bash
+curl -X POST https://your-domain.com/api/games \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+  -d '{
+    "gameType": "2v1",
+    "team1Player1": "Alice",
+    "team1Player2": "Bob",
+    "team2Player1": "Charlie",
+    "team1Score": 10,
+    "team2Score": 5
+  }'
+```
+
+### 2v2 game
+
+```bash
+curl -X POST https://your-domain.com/api/games \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+  -d '{
+    "gameType": "2v2",
+    "team1Player1": "Alice",
+    "team1Player2": "Bob",
+    "team2Player1": "Charlie",
+    "team2Player2": "Diana",
+    "team1Score": 10,
+    "team2Score": 0
+  }'
+```
+
+### 10-0 shutout
+
+```bash
+curl -X POST https://your-domain.com/api/games \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+  -d '{
+    "gameType": "1v1",
+    "team1Player1": "Alice",
+    "team2Player1": "Bob",
+    "team1Score": 10,
+    "team2Score": 0
+  }'
+```
+
+This game will receive the 1.5× shutout bonus on ELO changes.
+
+## Rate limiting
+
+Currently no rate limiting is implemented. Consider adding rate limiting in production environments to prevent abuse.
+
+## Webhooks
+
+Webhook support for game events is not currently implemented but planned for future releases.
