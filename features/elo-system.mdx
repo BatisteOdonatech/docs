@@ -1,0 +1,109 @@
+---
+title: 'ELO rating system'
+description: 'Understanding the ELO calculation and breakdown feature'
+---
+
+## Overview
+
+The foosball application uses an ELO rating system to track player skill levels. The system calculates rating changes based on game outcomes, with modifiers for special circumstances.
+
+## How ELO works
+
+### Expected score calculation
+
+The system calculates the probability of winning using the standard ELO formula:
+
+```
+E = 1 / (1 + 10^((ELO_opponent - ELO_team) / 400))
+```
+
+Where:
+- `E` is the expected score (win probability between 0 and 1)
+- `ELO_opponent` is the opposing team's average rating
+- `ELO_team` is your team's average rating
+
+### Base rating change
+
+The base rating change is calculated using a K-factor of 32:
+
+```
+Base Change = K × (Actual Score - Expected Score)
+Base Change = 32 × (1 - Expected Score)  // for winners
+```
+
+## Modifiers
+
+The system applies multipliers to the base change in certain situations:
+
+### 10-0 shutout bonus
+
+Perfect victories receive a 1.5× multiplier:
+- Applies when the winning team scores 10 points and the losing team scores 0
+- Rewards dominant performances
+
+### 2v1 game adjustments
+
+When a solo player faces a duo:
+- **Solo player wins**: 2× multiplier for the solo player, standard calculation for duo players
+- **Duo wins**: 0.5× multiplier for each duo player, standard calculation for solo player
+
+This balances the inherent difficulty of playing alone against two opponents.
+
+## ELO breakdown feature
+
+The games page includes a collapsible ELO details panel for each game, showing:
+
+<Steps>
+<Step title="Team ratings">
+  Average ELO for each team and the difference between them
+</Step>
+
+<Step title="Win probability">
+  Expected score percentages for both teams based on the ELO formula
+</Step>
+
+<Step title="Calculation breakdown">
+  - K-factor (32)
+  - Base ELO change before modifiers
+  - Applied modifiers with descriptions
+  - Final ELO change
+</Step>
+
+<Step title="Formula display">
+  Human-readable formula showing the complete calculation
+</Step>
+</Steps>
+
+## Example calculation
+
+For a game where:
+- Team 1 average ELO: 1200
+- Team 2 average ELO: 1150
+- Team 1 wins 10-5
+
+**Step 1**: Calculate expected score
+```
+E_team1 = 1 / (1 + 10^((1150 - 1200) / 400))
+E_team1 = 1 / (1 + 10^(-0.125))
+E_team1 ≈ 0.57 (57% win probability)
+```
+
+**Step 2**: Calculate base change
+```
+Base Change = 32 × (1 - 0.57)
+Base Change = 32 × 0.43
+Base Change ≈ 14 points
+```
+
+**Step 3**: Apply modifiers (none in this case)
+
+**Final result**: Team 1 gains 14 points, Team 2 loses 14 points
+
+## Implementation details
+
+The ELO calculation logic is implemented in `lib/elo.ts` with two main functions:
+
+- `calculateEloChanges()`: Computes rating changes for game results
+- `calculateEloBreakdown()`: Generates detailed breakdown for UI display
+
+The breakdown feature helps players understand exactly how their rating changed and promotes transparency in the ranking system.
