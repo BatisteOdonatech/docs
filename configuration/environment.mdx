@@ -1,0 +1,205 @@
+---
+title: 'Environment variables'
+description: 'Configure your foosball tracker instance'
+---
+
+## Required variables
+
+### Database
+
+#### DATABASE_URL
+
+Connection string for your Neon PostgreSQL database.
+
+```bash
+DATABASE_URL=postgresql://user:password@host/database?sslmode=require
+```
+
+**Format**: Standard PostgreSQL connection string with SSL enabled
+
+**Where to get it**:
+1. Create a Neon project at [neon.tech](https://neon.tech)
+2. Copy the connection string from your project dashboard
+3. Ensure it includes `?sslmode=require` for secure connections
+
+### Authentication
+
+#### NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+
+Public key for Clerk authentication (client-side).
+
+```bash
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxxxxxxxxxxxx
+```
+
+**Prefix**: Must start with `NEXT_PUBLIC_` to be accessible in the browser
+
+**Where to get it**: [Clerk dashboard](https://dashboard.clerk.com) → Your application → API Keys
+
+#### CLERK_SECRET_KEY
+
+Secret key for Clerk authentication (server-side).
+
+```bash
+CLERK_SECRET_KEY=sk_test_xxxxxxxxxxxxx
+```
+
+**Security**: Never commit this to version control or expose it publicly
+
+**Where to get it**: [Clerk dashboard](https://dashboard.clerk.com) → Your application → API Keys
+
+### Admin access
+
+#### ADMIN_USER_IDS
+
+Comma-separated list of Clerk user IDs with admin privileges.
+
+```bash
+ADMIN_USER_IDS=user_2abc123,user_2def456
+```
+
+**Format**: Clerk user IDs separated by commas (no spaces)
+
+**Where to get it**: 
+1. Sign in to your application
+2. Go to [Clerk dashboard](https://dashboard.clerk.com) → Users
+3. Find your user and copy the ID (starts with `user_`)
+
+## Optional variables
+
+### Logging
+
+#### LOG_LEVEL
+
+Set the logging verbosity level.
+
+```bash
+LOG_LEVEL=info
+```
+
+**Options**: `debug`, `info`, `warn`, `error`
+
+**Default**: `info`
+
+**Usage**: Helpful for debugging in development
+
+## Environment files
+
+### Development (.env.local)
+
+Create a `.env.local` file in the project root:
+
+```bash
+# Database
+DATABASE_URL=postgresql://user:password@host/database?sslmode=require
+
+# Clerk authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxxxxxxxxxxxx
+CLERK_SECRET_KEY=sk_test_xxxxxxxxxxxxx
+
+# Admin users
+ADMIN_USER_IDS=user_2abc123,user_2def456
+
+# Optional
+LOG_LEVEL=debug
+```
+
+<Warning>
+Never commit `.env.local` to version control. It's included in `.gitignore` by default.
+</Warning>
+
+### Production (Vercel)
+
+Add environment variables in your Vercel project settings:
+
+<Steps>
+<Step title="Open project settings">
+Go to your Vercel project → Settings → Environment Variables
+</Step>
+
+<Step title="Add each variable">
+Enter the name and value for each required variable
+</Step>
+
+<Step title="Select environments">
+Choose which environments (Production, Preview, Development) should have access
+</Step>
+
+<Step title="Redeploy">
+Trigger a new deployment for changes to take effect
+</Step>
+</Steps>
+
+## Validation
+
+The application validates environment variables on startup:
+
+- Missing required variables will prevent the app from starting
+- Invalid formats will log warnings
+- Database connection is tested on first query
+
+## Security best practices
+
+<Warning>
+**Never expose secret keys**: Keep `CLERK_SECRET_KEY` and `DATABASE_URL` private.
+</Warning>
+
+### Recommendations
+
+1. **Use different keys per environment**: Separate keys for development, staging, and production
+2. **Rotate secrets regularly**: Update keys periodically for security
+3. **Limit admin access**: Only add trusted users to `ADMIN_USER_IDS`
+4. **Enable SSL**: Always use `sslmode=require` for database connections
+5. **Monitor access**: Review Clerk logs for suspicious activity
+
+## Troubleshooting
+
+### "Database connection failed"
+
+- Verify `DATABASE_URL` is correct
+- Check network connectivity to Neon
+- Ensure SSL mode is enabled
+- Confirm database exists and is accessible
+
+### "Clerk authentication error"
+
+- Verify both Clerk keys are set correctly
+- Check keys match your Clerk application
+- Ensure `NEXT_PUBLIC_` prefix is present on the publishable key
+- Confirm keys are for the correct environment (test vs production)
+
+### "Admin access denied"
+
+- Verify user ID is in `ADMIN_USER_IDS`
+- Check for typos in user IDs
+- Ensure no spaces in the comma-separated list
+- Restart the server after changes
+
+### Environment variables not loading
+
+- Confirm file is named `.env.local` (not `.env`)
+- Check file is in the project root directory
+- Restart the development server
+- Verify no syntax errors in the file
+
+## Example configurations
+
+### Local development
+
+```bash
+DATABASE_URL=postgresql://user:pass@localhost:5432/foosball_dev
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_local123
+CLERK_SECRET_KEY=sk_test_local123
+ADMIN_USER_IDS=user_2local123
+LOG_LEVEL=debug
+```
+
+### Production
+
+```bash
+DATABASE_URL=postgresql://user:pass@prod-host.neon.tech/foosball
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_prod123
+CLERK_SECRET_KEY=sk_live_prod123
+ADMIN_USER_IDS=user_2prod123,user_2prod456
+LOG_LEVEL=info
+```
