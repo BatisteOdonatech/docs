@@ -1,80 +1,131 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: 'Quickstart'
+description: 'Get your foosball tracker running in minutes'
 ---
 
-## Get started in three steps
+## Prerequisites
 
-Get your documentation site running locally and make your first customization.
+Before you begin, ensure you have:
 
-### Step 1: Set up your local environment
+- Node.js 19 or higher
+- A Neon PostgreSQL database
+- A Clerk account for authentication
+- pnpm package manager (recommended)
+
+## Installation
+
+<Steps>
+<Step title="Clone the repository">
+
+```bash
+git clone https://github.com/BatisteOdonatech/v0-minimalist-foosball-site.git
+cd v0-minimalist-foosball-site
+```
+
+</Step>
+
+<Step title="Install dependencies">
+
+```bash
+pnpm install
+```
+
+</Step>
+
+<Step title="Set up environment variables">
+
+Create a `.env.local` file in the root directory:
+
+```bash
+# Database
+DATABASE_URL=your_neon_database_url
+
+# Clerk authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+CLERK_SECRET_KEY=your_clerk_secret_key
+
+# Admin users (comma-separated Clerk user IDs)
+ADMIN_USER_IDS=user_xxx,user_yyy
+```
+
+<Tip>Get your Clerk keys from the [Clerk dashboard](https://dashboard.clerk.com)</Tip>
+
+</Step>
+
+<Step title="Initialize the database">
+
+Run the SQL schema from `scripts/history/03-complete-schema.sql` in your Neon database console to create the required tables.
+
+</Step>
+
+<Step title="Start the development server">
+
+```bash
+pnpm dev
+```
+
+Your application will be available at `http://localhost:3000`
+
+</Step>
+</Steps>
+
+## First steps
 
 <AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
+  <Accordion icon="user-plus" title="Create your first player">
+    Navigate to the log game page and enter player names. Players are automatically created when you log your first game.
   </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
+  
+  <Accordion icon="gamepad" title="Log your first game">
+    1. Go to `/log-game`
+    2. Select game type (1v1, 2v1, or 2v2)
+    3. Enter player names for each team
+    4. Enter the final score (winning team must have 10 points)
+    5. Submit the game
     
-    <Tip>Your preview updates automatically as you edit files.</Tip>
+    ELO ratings will be calculated automatically!
+  </Accordion>
+  
+  <Accordion icon="shield" title="Set up admin access">
+    1. Sign in with Clerk
+    2. Copy your Clerk user ID from the Clerk dashboard
+    3. Add it to the `ADMIN_USER_IDS` environment variable
+    4. Restart the server
+    5. Access the admin panel at `/admin`
   </Accordion>
 </AccordionGroup>
 
-### Step 2: Deploy your changes
+## Deployment
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+### Deploy to Vercel
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+<Steps>
+<Step title="Connect your repository">
+Push your code to GitHub and connect it to Vercel.
+</Step>
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+<Step title="Configure environment variables">
+Add all environment variables from `.env.local` to your Vercel project settings.
+</Step>
 
-### Step 3: Go live
-
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+<Step title="Deploy">
+Vercel will automatically build and deploy your application.
+</Step>
+</Steps>
 
 ## Next steps
 
-Now that you have your docs running, explore these key features:
-
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="Configure ELO settings" icon="sliders" href="/configuration/elo">
+    Customize K-factor and starting ELO
+  </Card>
+  <Card title="Explore features" icon="compass" href="/features/game-logging">
+    Learn about all available features
+  </Card>
+  <Card title="Admin panel" icon="shield" href="/features/admin">
+    Manage players and adjust ratings
+  </Card>
+  <Card title="API integration" icon="code" href="/api-reference/games">
+    Build custom integrations
+  </Card>
 </CardGroup>
-
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>

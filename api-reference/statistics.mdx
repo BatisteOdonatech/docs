@@ -1,0 +1,302 @@
+---
+title: 'Statistics API'
+description: 'Endpoint for retrieving game analytics'
+---
+
+## Get statistics
+
+Retrieve comprehensive statistics and analytics for all players.
+
+```http
+GET /api/statistics
+```
+
+### Response
+
+Returns detailed statistics including player interactions, game type distribution, ELO history, and fun facts.
+
+```json
+{
+  "players": ["Alice", "Bob", "Charlie"],
+  "teammateGamesMatrix": [
+    [0, 5, 3],
+    [5, 0, 7],
+    [3, 7, 0]
+  ],
+  "teammateWinrateMatrix": [
+    [null, 60.0, 66.7],
+    [60.0, null, 57.1],
+    [66.7, 57.1, null]
+  ],
+  "opponentGamesMatrix": [
+    [0, 8, 6],
+    [8, 0, 4],
+    [6, 4, 0]
+  ],
+  "opponentWinrateMatrix": [
+    [null, 62.5, 50.0],
+    [37.5, null, 75.0],
+    [50.0, 25.0, null]
+  ],
+  "gameTypeStats": [
+    { "oneVone": 10, "twoVone": 5, "twoVtwo": 8 },
+    { "oneVone": 12, "twoVone": 3, "twoVtwo": 7 },
+    { "oneVone": 8, "twoVone": 6, "twoVtwo": 9 }
+  ],
+  "eloHistory": [
+    {
+      "timestamp": "2024-11-05T00:00:00Z",
+      "playerElos": {
+        "Alice": 1250,
+        "Bob": 1180,
+        "Charlie": 1220
+      }
+    }
+  ],
+  "scoreDistribution": [
+    { "score": 0, "count": 5 },
+    { "score": 1, "count": 3 },
+    { "score": 8, "count": 12 },
+    { "score": 9, "count": 15 }
+  ],
+  "funFacts": {
+    "soloWinRate": 35.5,
+    "twoVOneTotal": 20,
+    "twoVOneSoloWins": 7,
+    "mostCommonScore": "10-8",
+    "mostCommonScoreCount": 15,
+    "mostCommonScorePercentage": 18.5,
+    "totalGames": 81
+  }
+}
+```
+
+## Response structure
+
+### players
+
+Array of player names in the order used for matrix indices.
+
+```json
+["Alice", "Bob", "Charlie"]
+```
+
+### teammateGamesMatrix
+
+2D matrix showing number of games each player pair has played together.
+
+- **Dimensions**: N×N where N is the number of players
+- **Diagonal**: Always 0 (player can't team with themselves)
+- **Symmetric**: `matrix[i][j] === matrix[j][i]`
+- **Values**: Non-negative integers
+
+**Example**: `teammateGamesMatrix[0][1] = 5` means Alice and Bob played 5 games together.
+
+### teammateWinrateMatrix
+
+2D matrix showing win percentage when players team up.
+
+- **Dimensions**: N×N where N is the number of players
+- **Diagonal**: Always `null`
+- **Symmetric**: `matrix[i][j] === matrix[j][i]`
+- **Values**: 0-100 (percentage) or `null` if no games together
+
+**Example**: `teammateWinrateMatrix[0][1] = 60.0` means Alice and Bob won 60% of games as teammates.
+
+### opponentGamesMatrix
+
+2D matrix showing number of games each player pair has played against each other.
+
+- **Dimensions**: N×N where N is the number of players
+- **Diagonal**: Always 0
+- **Symmetric**: `matrix[i][j] === matrix[j][i]`
+- **Values**: Non-negative integers
+
+**Example**: `opponentGamesMatrix[0][1] = 8` means Alice and Bob faced each other 8 times.
+
+### opponentWinrateMatrix
+
+2D matrix showing win percentage of row player versus column player.
+
+- **Dimensions**: N×N where N is the number of players
+- **Diagonal**: Always `null`
+- **Asymmetric**: `matrix[i][j]` is row player's win rate against column player
+- **Values**: 0-100 (percentage) or `null` if no games
+
+**Example**: `opponentWinrateMatrix[0][1] = 62.5` means Alice won 62.5% of games against Bob.
+
+### gameTypeStats
+
+Array of game type counts for each player.
+
+```json
+[
+  { "oneVone": 10, "twoVone": 5, "twoVtwo": 8 }
+]
+```
+
+- **Index**: Corresponds to player order in `players` array
+- **oneVone**: Number of 1v1 games
+- **twoVone**: Number of 2v1 games
+- **twoVtwo**: Number of 2v2 games
+
+### eloHistory
+
+Array of ELO snapshots over the last 30 days.
+
+```json
+[
+  {
+    "timestamp": "2024-11-05T00:00:00Z",
+    "playerElos": {
+      "Alice": 1250,
+      "Bob": 1180
+    }
+  }
+]
+```
+
+- **timestamp**: ISO 8601 date
+- **playerElos**: Object mapping player names to ELO ratings
+- **Frequency**: One entry per day with games
+- **Missing players**: Players with no games on that day are omitted
+
+### scoreDistribution
+
+Array showing frequency of losing team scores.
+
+```json
+[
+  { "score": 0, "count": 5 },
+  { "score": 8, "count": 12 }
+]
+```
+
+- **score**: Losing team's score (0-9)
+- **count**: Number of games ending with this score
+- **Excludes**: Winning scores (always 10)
+
+### funFacts
+
+Interesting statistics from all games.
+
+```json
+{
+  "soloWinRate": 35.5,
+  "twoVOneTotal": 20,
+  "twoVOneSoloWins": 7,
+  "mostCommonScore": "10-8",
+  "mostCommonScoreCount": 15,
+  "mostCommonScorePercentage": 18.5,
+  "totalGames": 81
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `soloWinRate` | number | Percentage of 2v1 games won by solo player |
+| `twoVOneTotal` | integer | Total number of 2v1 games |
+| `twoVOneSoloWins` | integer | Number of 2v1 games won by solo player |
+| `mostCommonScore` | string | Most frequent final score (format: "10-X") |
+| `mostCommonScoreCount` | integer | Number of games with most common score |
+| `mostCommonScorePercentage` | number | Percentage of games with most common score |
+| `totalGames` | integer | Total number of games in database |
+
+## Example requests
+
+### Get all statistics
+
+```bash
+curl https://your-domain.com/api/statistics
+```
+
+### Parse teammate synergy
+
+```javascript
+fetch('/api/statistics')
+  .then(res => res.json())
+  .then(data => {
+    const { players, teammateWinrateMatrix } = data
+    
+    // Find best teammate pair
+    let bestPair = { players: [], winRate: 0 }
+    for (let i = 0; i < players.length; i++) {
+      for (let j = i + 1; j < players.length; j++) {
+        const winRate = teammateWinrateMatrix[i][j]
+        if (winRate && winRate > bestPair.winRate) {
+          bestPair = {
+            players: [players[i], players[j]],
+            winRate
+          }
+        }
+      }
+    }
+    
+    console.log(`Best duo: ${bestPair.players.join(' & ')} (${bestPair.winRate}%)`)
+  })
+```
+
+### Find nemesis
+
+```javascript
+fetch('/api/statistics')
+  .then(res => res.json())
+  .then(data => {
+    const { players, opponentWinrateMatrix } = data
+    const playerIndex = 0 // Alice
+    
+    // Find player's worst matchup
+    let nemesis = { name: '', winRate: 100 }
+    for (let i = 0; i < players.length; i++) {
+      if (i === playerIndex) continue
+      const winRate = opponentWinrateMatrix[playerIndex][i]
+      if (winRate !== null && winRate < nemesis.winRate) {
+        nemesis = { name: players[i], winRate }
+      }
+    }
+    
+    console.log(`${players[playerIndex]}'s nemesis: ${nemesis.name} (${nemesis.winRate}% win rate)`)
+  })
+```
+
+## Performance
+
+- **Computation**: All statistics calculated on-demand
+- **Caching**: No caching currently implemented
+- **Response time**: 200-500ms for 50 players with 100+ games
+- **Optimization**: Database queries use indexes and joins
+
+## Data freshness
+
+Statistics reflect all games up to the request time. No caching means data is always current.
+
+## Error responses
+
+### 500 Internal Server Error
+
+```json
+{
+  "error": "Failed to calculate statistics",
+  "details": "Database query error"
+}
+```
+
+Server-side errors during calculation.
+
+## Use cases
+
+### Heatmap visualization
+
+Use matrix data to create interactive heatmaps showing player relationships.
+
+### ELO progression charts
+
+Plot `eloHistory` data to show rating changes over time.
+
+### Game type analysis
+
+Visualize `gameTypeStats` to understand player preferences and versatility.
+
+### Competitive insights
+
+Identify strongest partnerships and most challenging opponents for strategic planning.

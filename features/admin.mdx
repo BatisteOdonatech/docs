@@ -1,0 +1,244 @@
+---
+title: 'Admin panel'
+description: 'Manage players and system settings'
+---
+
+## Overview
+
+The admin panel provides privileged users with tools to manage players, adjust ELO ratings, and maintain the system. Access is restricted to users listed in the `ADMIN_USER_IDS` environment variable.
+
+## Access control
+
+### Setting up admins
+
+Add Clerk user IDs to your environment variables:
+
+```bash
+ADMIN_USER_IDS=user_2abc123,user_2def456,user_2ghi789
+```
+
+Multiple admins can be configured by separating user IDs with commas.
+
+### Getting your Clerk user ID
+
+<Steps>
+<Step title="Sign in to your application">
+Authenticate using Clerk.
+</Step>
+
+<Step title="Find your user ID">
+Go to the [Clerk dashboard](https://dashboard.clerk.com), navigate to Users, and copy your user ID (starts with `user_`).
+</Step>
+
+<Step title="Add to environment">
+Update `ADMIN_USER_IDS` in your `.env.local` file or deployment environment variables.
+</Step>
+
+<Step title="Restart the server">
+Changes to environment variables require a server restart.
+</Step>
+</Steps>
+
+### Access verification
+
+The system checks admin status on every request:
+- Non-admins are redirected to the home page
+- Admin status is logged for security auditing
+- No admin UI elements are shown to regular users
+
+## Player management
+
+### Player list
+
+View all players with their current statistics:
+
+- Name
+- Current ELO
+- Games played
+- Wins and losses
+- Enabled/disabled status
+
+Players are sorted by ELO rating (highest to lowest).
+
+### Adjust player ELO
+
+Manually modify a player's ELO rating:
+
+<Steps>
+<Step title="Select player">
+Click "Adjust ELO" next to the player's name.
+</Step>
+
+<Step title="Enter new ELO">
+Input the desired ELO value in the dialog.
+</Step>
+
+<Step title="Confirm adjustment">
+Submit the change. The system will:
+- Update the player's current ELO
+- Create an ELO history entry
+- Log the adjustment with admin details
+</Step>
+</Steps>
+
+<Warning>
+Manual ELO adjustments bypass normal game calculations. Use sparingly and document reasons for changes.
+</Warning>
+
+### Use cases for ELO adjustment
+
+- **Correction**: Fix errors from incorrectly logged games
+- **Migration**: Set initial ELO for players joining from another system
+- **Reset**: Return a player to starting ELO
+- **Calibration**: Adjust for skill level changes
+
+### Enable/disable players
+
+Control player visibility on the leaderboard:
+
+- **Enabled**: Player appears on leaderboard and in statistics
+- **Disabled**: Player hidden from public views but data preserved
+
+<Note>
+Disabling a player doesn't delete their games or history. They can be re-enabled at any time.
+</Note>
+
+## ELO normalization
+
+### Purpose
+
+Normalize all player ELO ratings to maintain a balanced distribution around the starting ELO (1200).
+
+### How it works
+
+The normalization process:
+
+1. Calculates the average ELO of all active players
+2. Determines the offset from the target (1200)
+3. Adjusts all players by the same offset
+4. Maintains relative differences between players
+
+### When to use
+
+- After many games, if average ELO has drifted significantly
+- When integrating new players
+- To reset the overall rating scale
+
+### Running normalization
+
+<Steps>
+<Step title="Navigate to admin panel">
+Go to `/admin`
+</Step>
+
+<Step title="Click normalize ELO">
+Find the "Normalize ELO" button in the admin interface.
+</Step>
+
+<Step title="Confirm action">
+Review the impact and confirm the normalization.
+</Step>
+
+<Step title="Verify results">
+Check the leaderboard to ensure ratings are properly adjusted.
+</Step>
+</Steps>
+
+<Warning>
+Normalization affects all players simultaneously. This action cannot be undone automatically.
+</Warning>
+
+## Data export
+
+### Export player data
+
+Download complete player information as JSON:
+
+- Player profiles
+- ELO history
+- Game statistics
+- Timestamps
+
+### Export format
+
+```json
+{
+  "players": [
+    {
+      "id": 1,
+      "name": "Player Name",
+      "current_elo": 1250,
+      "games_played": 42,
+      "wins": 25,
+      "losses": 17,
+      "enabled": true,
+      "created_at": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "exported_at": "2024-12-05T16:00:00Z",
+  "total_players": 10
+}
+```
+
+### Use cases
+
+- **Backup**: Regular data backups
+- **Analysis**: External data analysis
+- **Migration**: Moving to another system
+- **Reporting**: Generate custom reports
+
+## Admin navigation
+
+The admin panel includes a dedicated navigation bar:
+
+- **Players**: Main player management view
+- **Export**: Data export functionality
+- **Back to site**: Return to public pages
+
+## Security considerations
+
+<Warning>
+Admin actions are logged but not currently reversible through the UI. Exercise caution when making changes.
+</Warning>
+
+### Best practices
+
+1. **Limit admin access**: Only grant to trusted users
+2. **Document changes**: Keep records of manual adjustments
+3. **Regular backups**: Export data periodically
+4. **Verify before acting**: Double-check player names and values
+5. **Communicate changes**: Inform players of manual adjustments
+
+## API endpoints
+
+Admin functionality uses protected API routes:
+
+- `POST /api/admin/players/[id]/adjust-elo`: Adjust player ELO
+- `POST /api/admin/normalize-elo`: Normalize all player ELOs
+- `GET /api/admin/export`: Export player data
+- `GET /api/admin/check`: Verify admin status
+
+All endpoints require authentication and admin privileges.
+
+## Troubleshooting
+
+### "Access denied" error
+
+- Verify your Clerk user ID is in `ADMIN_USER_IDS`
+- Check environment variables are loaded correctly
+- Restart the server after changes
+- Ensure you're signed in with the correct account
+
+### Changes not appearing
+
+- Refresh the page to see updates
+- Check browser console for errors
+- Verify database connection
+- Review server logs for issues
+
+### ELO normalization issues
+
+- Ensure all players have valid ELO values
+- Check for database constraints
+- Verify no games are being logged during normalization
+- Review the calculation logic in `/api/admin/normalize-elo`

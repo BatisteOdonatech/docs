@@ -1,0 +1,202 @@
+---
+title: 'Statistics'
+description: 'Comprehensive analytics and performance insights'
+---
+
+## Overview
+
+The statistics dashboard provides deep insights into player performance, matchups, and game patterns through interactive visualizations and heatmaps.
+
+## ELO evolution
+
+### Rating history chart
+
+Track how player ratings change over time with an interactive line chart:
+
+- **Time range**: Last 30 days of games
+- **Multiple players**: All active players shown simultaneously
+- **Color-coded**: Each player has a distinct color
+- **Interactive**: Hover to see exact ELO values at any point
+- **Responsive**: Adapts to mobile and desktop screens
+
+### Chart features
+
+- **Smooth lines**: Monotone interpolation for clean visualization
+- **Null handling**: Gaps for players with no games in the period
+- **Tooltips**: Detailed information on hover
+- **Legend**: Toggle player visibility (future feature)
+- **Date labels**: Clear timeline markers
+
+## Player pairs analysis
+
+### Teammate statistics
+
+Analyze how well players perform together:
+
+#### Games together heatmap
+
+Shows the number of games each player pair has played as teammates:
+
+- **Color intensity**: Darker blue = more games together
+- **Diagonal**: Grayed out (player can't team with themselves)
+- **Hover**: Displays exact game count
+- **Scale**: Relative to maximum games played by any pair
+
+#### Teammate win rate heatmap
+
+Displays win percentage when players team up:
+
+- **Color coding**:
+  - Red (0-33%): Poor performance
+  - Yellow (33-67%): Average performance
+  - Green (67-100%): Excellent performance
+- **N/A cells**: Pairs who haven't played together
+- **Hover**: Shows win rate and game count
+
+### Opponent statistics
+
+Track head-to-head matchups:
+
+#### Games against heatmap
+
+Number of times players have faced each other as opponents:
+
+- **Color intensity**: Darker blue = more matchups
+- **Symmetric**: Same value for both directions
+- **Hover**: Displays game count
+
+#### Head-to-head win rate heatmap
+
+Win percentage of row player versus column player:
+
+- **Asymmetric**: Different values for each direction
+- **Color coding**: Same as teammate win rate
+- **Hover**: Shows win rate and game count
+- **Interpretation**: Row player's success rate against column player
+
+## Game type distribution
+
+### Format breakdown
+
+Visualize how many games each player has played in different formats:
+
+- **1v1**: Singles matches (green)
+- **2v1**: Handicap matches (yellow)
+- **2v2**: Doubles matches (blue)
+
+### Stacked bar chart
+
+- **Proportional**: Shows percentage distribution
+- **Absolute counts**: Displays actual game numbers
+- **Hover**: Detailed breakdown per format
+- **Total**: Sum of all game types shown on the right
+
+## Score distribution
+
+### Losing team scores
+
+Analyze the frequency of different losing scores:
+
+- **Range**: 0-9 points (losing team scores)
+- **Bar chart**: Visual representation of frequency
+- **Most common**: Identifies typical losing scores
+- **Shutouts**: Track 10-0 games (score of 0)
+
+### Insights
+
+This data reveals:
+- How competitive games typically are
+- Frequency of close matches (8-9 scores)
+- Rate of dominant victories (0-3 scores)
+- Average competitiveness of your player pool
+
+## Fun facts
+
+### Solo player success
+
+Track the underdog story in 2v1 games:
+
+- **Solo win rate**: Percentage of 2v1 games won by the solo player
+- **Total 2v1 games**: Number of handicap matches played
+- **Solo victories**: Count of solo player wins
+- **Interpretation**: Higher percentage = solo players are competitive
+
+### Most common score
+
+Identify the most frequent final score:
+
+- **Score format**: "10-X" where X is the losing team's score
+- **Frequency**: Number of games with this score
+- **Percentage**: Proportion of all games
+- **Context**: Total games played
+
+## Heatmap interaction
+
+All heatmaps support:
+
+### Hover tooltips
+
+- **Desktop**: Hover over any cell for details
+- **Mobile**: Tap to view information
+- **Content**: Player names, values, and context
+
+### Visual scaling
+
+- **Relative colors**: Intensity based on maximum value
+- **Consistent scheme**: Same colors across similar metrics
+- **Accessibility**: High contrast for readability
+
+### Responsive design
+
+- **Mobile**: Horizontal scrolling for large matrices
+- **Tablet**: Optimized cell sizes
+- **Desktop**: Full view with comfortable spacing
+
+## Data requirements
+
+Statistics are calculated from:
+
+- All logged games in the database
+- Active and inactive players
+- All game types (1v1, 2v1, 2v2)
+- Complete ELO history
+
+<Note>
+Statistics update in real-time as new games are logged. Refresh the page to see the latest data.
+</Note>
+
+## Performance considerations
+
+For large datasets:
+
+- **ELO history**: Limited to last 30 days
+- **Heatmaps**: All players included
+- **Calculations**: Server-side for efficiency
+- **Caching**: Future optimization planned
+
+## Interpreting the data
+
+### Teammate synergy
+
+High win rates with specific teammates suggest:
+- Compatible play styles
+- Effective communication
+- Strategic coordination
+
+### Nemesis identification
+
+Low win rates against specific opponents indicate:
+- Challenging matchups
+- Style counters
+- Areas for improvement
+
+### Game type preferences
+
+Distribution reveals:
+- Preferred formats
+- Versatility
+- Specialization
+
+<Tip>
+Use statistics to identify your strongest teammates and most challenging opponents for strategic game planning.
+</Tip>

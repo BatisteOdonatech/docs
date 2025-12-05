@@ -1,0 +1,161 @@
+---
+title: 'Game logging'
+description: 'Record foosball matches and track results'
+---
+
+## Overview
+
+The game logging system allows you to record matches between players with automatic ELO calculation and statistics tracking. All games must be logged by authenticated users.
+
+## Game types
+
+The application supports three game formats:
+
+### 1v1 (Singles)
+
+Classic one-on-one matches between two players.
+
+- Two players total
+- Direct head-to-head competition
+- Standard ELO calculation
+
+### 2v1 (Handicap)
+
+One player faces a team of two players.
+
+- Three players total
+- Special ELO modifiers apply:
+  - Solo player wins: 2× ELO gain for solo, 0.5× loss for each duo player
+  - Duo wins: 0.5× ELO gain for each duo player, 1× loss for solo
+
+### 2v2 (Doubles)
+
+Team-based matches with two players per side.
+
+- Four players total
+- Team average ELO used for calculations
+- Both teammates receive the same ELO change
+
+## Logging a game
+
+<Steps>
+<Step title="Navigate to log game page">
+Go to `/log-game` or click "Log game" in the navigation.
+</Step>
+
+<Step title="Select game type">
+Choose between 1v1, 2v1, or 2v2 using the dropdown selector.
+</Step>
+
+<Step title="Enter player names">
+Type player names for each team position. The system will:
+- Auto-suggest existing players
+- Create new players automatically if names don't exist
+- Validate that all required positions are filled
+</Step>
+
+<Step title="Enter scores">
+Input the final score for each team:
+- Scores must be between 0 and 10
+- One team must have exactly 10 points (winning score)
+- The other team must have less than 10 points
+</Step>
+
+<Step title="Submit the game">
+Click "Log game" to record the match. The system will:
+- Validate all inputs
+- Calculate ELO changes
+- Update player statistics
+- Record the game in history
+</Step>
+</Steps>
+
+## Score validation
+
+The application enforces these rules:
+
+- Winning team must score exactly 10 points
+- Losing team must score between 0 and 9 points
+- Scores cannot be negative
+- One team must win (no ties)
+
+## Special modifiers
+
+### 10-0 shutout bonus
+
+Perfect victories receive a 1.5× multiplier on ELO changes:
+
+```
+Base ELO change: +15
+With shutout bonus: +15 × 1.5 = +23
+```
+
+This rewards dominant performances and penalizes complete defeats.
+
+### 2v1 adjustments
+
+When a solo player faces a duo, the ELO distribution is adjusted to maintain fairness:
+
+**Solo player wins:**
+- Solo player: 2× normal ELO gain
+- Each duo player: 0.5× normal ELO loss
+
+**Duo wins:**
+- Each duo player: 0.5× normal ELO gain
+- Solo player: 1× normal ELO loss
+
+This balances the inherent difficulty of playing alone against two opponents.
+
+## Player creation
+
+Players are created automatically when logging games:
+
+- **Starting ELO**: 1200 (configurable)
+- **Initial stats**: 0 games, 0 wins, 0 losses
+- **Name validation**: Alphanumeric characters, spaces, hyphens, and underscores only
+- **Max length**: 50 characters
+
+## Game history
+
+All logged games are stored with:
+
+- Player names and IDs
+- Team compositions
+- Final scores
+- Winner designation
+- ELO changes for each player
+- Timestamp
+- User who recorded the game
+
+View game history on the `/games` page with detailed ELO breakdowns.
+
+## Error handling
+
+The system validates:
+
+- User authentication (must be signed in)
+- Player name format and length
+- Score validity
+- Game type consistency
+- Database constraints
+
+Common errors:
+
+- **"Authentication required"**: Sign in with Clerk
+- **"Invalid score"**: Check that winner has 10 points
+- **"Invalid player name"**: Use only allowed characters
+- **"Game type mismatch"**: Verify player count matches game type
+
+## Best practices
+
+<Tip>
+**Accurate logging**: Always verify player names and scores before submitting to maintain data integrity.
+</Tip>
+
+<Warning>
+**No editing**: Games cannot be edited after submission. Double-check all details before logging.
+</Warning>
+
+<Note>
+**Player names**: Use consistent naming (e.g., "John" vs "john" creates two different players).
+</Note>

@@ -1,0 +1,172 @@
+---
+title: 'Leaderboard'
+description: 'Player rankings and achievements'
+---
+
+## Overview
+
+The leaderboard displays all active players ranked by their current ELO rating. It provides a quick overview of player performance with statistics and dynamic achievement tags.
+
+## Ranking system
+
+Players are ranked by their current ELO rating in descending order:
+
+- **Highest ELO**: Top of the leaderboard
+- **Lowest ELO**: Bottom of the leaderboard
+- **Starting ELO**: 1200 (default)
+
+## Player information
+
+Each leaderboard entry shows:
+
+### Core stats
+
+- **Name**: Player identifier
+- **Current ELO**: Latest rating after all games
+- **Games played**: Total number of matches
+- **Wins**: Number of victories
+- **Losses**: Number of defeats
+- **Win rate**: Percentage of games won
+
+### Player tags
+
+Dynamic badges that highlight achievements and status:
+
+#### RISING 📈
+
+Awarded to players who won their last 3 games in a row.
+
+- **Criteria**: 3 consecutive wins
+- **Color**: Blue
+- **Description**: "Won the last 3 games in a row"
+
+#### BUMP ⚡
+
+Given to players who earned 20+ ELO points in their most recent game.
+
+- **Criteria**: Last game ELO change ≥ +20
+- **Color**: Yellow
+- **Description**: "Earned 20+ ELO points in the last game"
+- **Animation**: Pulsing effect
+
+#### BALANCED ⚖️
+
+Recognizes players with a balanced win rate between 48-52%.
+
+- **Criteria**: Win rate between 48% and 52%
+- **Color**: Green
+- **Description**: "Has a balanced 48-52% win rate"
+
+#### UNFAIR 👑
+
+Marks dominant players with over 80% win rate.
+
+- **Criteria**: Win rate > 80%
+- **Color**: Purple
+- **Description**: "Dominating with over 80% win rate"
+
+#### RECORD 🏆
+
+Highlights the player(s) who reached the highest ELO ever recorded.
+
+- **Criteria**: Current ELO equals all-time high
+- **Color**: Orange
+- **Description**: "Holds the highest ELO ever reached"
+
+#### ZHERO 💀
+
+Identifies the player with the most games where they scored 0 points.
+
+- **Criteria**: Most 10-0 losses
+- **Color**: Red
+- **Description**: "Has the most games with 0 score"
+
+## Tag calculation
+
+Tags are computed dynamically based on:
+
+- Recent game results (last 3 games for RISING)
+- Latest ELO change (for BUMP)
+- Overall statistics (for BALANCED, UNFAIR)
+- Historical records (for RECORD, ZHERO)
+
+Multiple tags can be displayed simultaneously if a player meets multiple criteria.
+
+## Viewing player details
+
+Click on any player name to view their detailed profile at `/player/[name]`:
+
+- Complete game history
+- ELO progression chart
+- Head-to-head records
+- Teammate statistics
+- Performance trends
+
+## Leaderboard features
+
+### Real-time updates
+
+The leaderboard refreshes automatically when:
+- New games are logged
+- ELO ratings change
+- Player statistics update
+
+### Responsive design
+
+Optimized for all screen sizes:
+- Desktop: Full table with all columns
+- Mobile: Condensed view with essential stats
+- Tablet: Balanced layout
+
+### Sorting
+
+Players are always sorted by current ELO (highest to lowest). Future versions may support custom sorting options.
+
+## ELO distribution
+
+Typical ELO ranges:
+
+- **1400+**: Elite players
+- **1300-1399**: Advanced players
+- **1200-1299**: Intermediate players (starting range)
+- **1100-1199**: Developing players
+- **Below 1100**: Beginner players
+
+<Note>
+ELO ratings are relative to your player pool. A 1300 rating in one group may not equal 1300 in another.
+</Note>
+
+## Inactive players
+
+Players can be disabled in the admin panel:
+- Disabled players don't appear on the leaderboard
+- Their games remain in history
+- They can be re-enabled at any time
+
+## Statistics calculation
+
+### Win rate
+
+```
+Win Rate = (Wins / Games Played) × 100
+```
+
+Displayed as a percentage with one decimal place.
+
+### Games played
+
+Total count of all games where the player participated, regardless of team size or game type.
+
+### Current ELO
+
+The player's most recent ELO rating from their latest game. If a player has no games, they display the starting ELO (1200).
+
+## Best practices
+
+<Tip>
+**Regular play**: Maintain an active presence to keep your ranking relevant and tags up-to-date.
+</Tip>
+
+<Warning>
+**ELO volatility**: New players may experience large ELO swings until they've played 20+ games.
+</Warning>
