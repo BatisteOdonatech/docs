@@ -1,0 +1,342 @@
+---
+title: 'Windsurf IDE integration'
+description: 'Configure Mintlify MCP server in Windsurf for AI-powered documentation updates'
+---
+
+## Overview
+
+Windsurf IDE supports the Model Context Protocol (MCP), allowing you to connect the Mintlify MCP server directly to Cascade (Windsurf's AI assistant). This enables you to update documentation using natural language while coding in your foosball application.
+
+## Prerequisites
+
+- Windsurf IDE installed
+- Access to your documentation repository
+- Mintlify MCP server URL (if using hosted) or local setup
+
+## Configuration
+
+### Step 1: Access MCP settings
+
+<Steps>
+<Step title="Open MCP configuration">
+In Windsurf, click the **MCP servers** button (hammer icon) in the Cascade chat panel, then click **Configure**.
+</Step>
+
+<Step title="View raw config">
+In the **Manage plugins** tab, click **View raw config** to open `mcp_config.json`.
+</Step>
+</Steps>
+
+### Step 2: Add Mintlify MCP server
+
+Add the Mintlify MCP server configuration to your `mcp_config.json` file:
+
+#### Remote MCP server (hosted)
+
+If you're using a hosted Mintlify MCP server:
+
+```json mcp_config.json
+{
+  "mcpServers": {
+    "mintlify-docs": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://your-mintlify-mcp-server.com",
+        "--header",
+        "Authorization: Bearer ${MINTLIFY_API_KEY}"
+      ],
+      "env": {
+        "MINTLIFY_API_KEY": "your-api-key-here"
+      }
+    }
+  }
+}
+```
+
+#### Local MCP server
+
+If you're running Mintlify MCP locally:
+
+```json mcp_config.json
+{
+  "mcpServers": {
+    "mintlify-docs": {
+      "command": "node",
+      "args": [
+        "/path/to/mintlify-mcp/dist/index.js"
+      ],
+      "env": {
+        "DOCS_PATH": "/path/to/your/docs"
+      }
+    }
+  }
+}
+```
+
+<Warning>
+Replace `/path/to/mintlify-mcp` and `/path/to/your/docs` with actual paths on your system.
+</Warning>
+
+### Step 3: Refresh and activate
+
+<Steps>
+<Step title="Save configuration">
+Save the `mcp_config.json` file.
+</Step>
+
+<Step title="Refresh MCP servers">
+In the **Manage plugins** tab or Cascade chat, click **Refresh** to load the Mintlify MCP server.
+</Step>
+
+<Step title="Verify connection">
+Check that "mintlify-docs" appears in your available MCP servers list.
+</Step>
+</Steps>
+
+## Creating rules for documentation updates
+
+To ensure Windsurf automatically updates documentation when you make code changes, create workspace rules.
+
+### Step 1: Access rules
+
+<Steps>
+<Step title="Open customizations">
+Click the **Customizations** icon in the top right of Cascade, or go to "Windsurf - Settings" in the bottom-right corner.
+</Step>
+
+<Step title="Navigate to rules">
+Select the **Rules** panel.
+</Step>
+
+<Step title="Create workspace rule">
+Click **+ Workspace** to create a new workspace-level rule.
+</Step>
+</Steps>
+
+### Step 2: Configure documentation rule
+
+Create a rule file in `.windsurf/rules/` with the following content:
+
+```markdown .windsurf/rules/mintlify-docs.md
+# Mintlify Documentation Updates
+
+## When to update documentation
+
+After making significant code changes, you should update the documentation using the Mintlify MCP server.
+
+### Triggers for documentation updates
+
+- Adding new features or functionality
+- Modifying API endpoints
+- Changing configuration options
+- Updating ELO calculation logic
+- Adding new player statistics
+- Modifying game rules or validation
+
+## How to update documentation
+
+1. Use the `mintlify-docs` MCP server tools to update relevant documentation pages
+2. Ensure changes are clear, concise, and follow existing documentation style
+3. Update code examples to match new implementation
+4. Add new pages only when necessary - prefer updating existing content
+
+## Documentation structure
+
+- **Features**: Document user-facing functionality
+- **API reference**: Document endpoints and data structures
+- **Configuration**: Document environment variables and settings
+- **Guides**: Document setup and usage instructions
+
+## Style guidelines
+
+- Use second-person voice ("you")
+- Use sentence case for headings
+- Include code examples with language tags
+- Keep explanations concise and practical
+- Avoid marketing language
+```
+
+### Step 3: Set activation mode
+
+Configure the rule activation:
+
+- **Activation mode**: Model Decision
+- **Description**: "Apply when making code changes that affect user-facing features, APIs, or configuration"
+
+This allows Cascade to automatically determine when documentation updates are needed based on your code changes.
+
+## Alternative: Global rules
+
+For rules that apply across all your projects, add them to `global_rules.md`:
+
+```markdown ~/.codeium/windsurf/memories/global_rules.md
+## Documentation Best Practices
+
+When working on projects with documentation:
+
+- Always update documentation after significant code changes
+- Use the Mintlify MCP server when available
+- Follow the project's existing documentation style
+- Prefer updating existing pages over creating new ones
+- Include practical code examples
+```
+
+## Using Mintlify MCP in Cascade
+
+Once configured, you can interact with your documentation directly from Cascade:
+
+### Example prompts
+
+**Update existing documentation:**
+```
+I just added a new admin endpoint for bulk ELO adjustments. 
+Update the admin API documentation to include this new endpoint.
+```
+
+**Create new documentation:**
+```
+Create documentation for the new tournament bracket feature, 
+including setup instructions and API endpoints.
+```
+
+**Review and fix documentation:**
+```
+Review the ELO system documentation and ensure it matches 
+the current implementation in lib/elo.ts.
+```
+
+### Manual activation
+
+If your rule is set to "Manual" activation mode, you can explicitly invoke it:
+
+```
+@mintlify-docs Update the game logging documentation 
+to reflect the new score validation rules.
+```
+
+## Best practices
+
+<Tip>
+**Keep rules specific**: Define clear triggers for when documentation should be updated to avoid unnecessary updates.
+</Tip>
+
+### Rule organization
+
+- **Workspace rules**: Project-specific documentation guidelines
+- **Global rules**: General documentation best practices
+- **Activation modes**:
+  - Use "Model Decision" for automatic updates
+  - Use "Manual" for explicit control
+  - Use "Glob" for file-specific rules (e.g., `*.ts` files)
+
+### Rule formatting
+
+Use structured markdown for clarity:
+
+```markdown
+# Rule Category
+
+## Specific Rule
+
+- Bullet point 1
+- Bullet point 2
+
+### Sub-rule
+
+1. Numbered step 1
+2. Numbered step 2
+```
+
+Or use XML tags for grouping:
+
+```markdown
+<documentation_updates>
+- Update docs after API changes
+- Include code examples
+- Follow existing style
+</documentation_updates>
+
+<code_standards>
+- Use TypeScript
+- Add JSDoc comments
+- Write tests
+</code_standards>
+```
+
+## Troubleshooting
+
+### MCP server not appearing
+
+- Verify `mcp_config.json` syntax is valid JSON
+- Check that paths are absolute and correct
+- Ensure environment variables are set
+- Restart Windsurf after configuration changes
+
+### Rules not activating
+
+- Check rule activation mode is appropriate
+- Verify rule description is clear (for Model Decision mode)
+- Ensure rule file is under 12,000 characters
+- Check that `.windsurf/rules` directory exists
+
+### Authentication errors
+
+- Verify API keys are correct in `env` block
+- Check that environment variables are properly formatted
+- Ensure MCP server URL is accessible
+
+## Advanced configuration
+
+### Multiple MCP servers
+
+You can configure multiple MCP servers simultaneously:
+
+```json mcp_config.json
+{
+  "mcpServers": {
+    "mintlify-docs": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://docs-mcp.com"]
+    },
+    "github-integration": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://github-mcp.com"]
+    }
+  }
+}
+```
+
+### Conditional rules with globs
+
+Create rules that only apply to specific files:
+
+**Activation mode**: Glob  
+**Pattern**: `lib/**/*.ts`
+
+```markdown
+# TypeScript Library Documentation
+
+When modifying TypeScript files in the lib directory:
+- Update corresponding API documentation
+- Add JSDoc comments to exported functions
+- Update type definitions in documentation
+```
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="MCP documentation" icon="book" href="https://modelcontextprotocol.io/">
+    Learn more about Model Context Protocol
+  </Card>
+  <Card title="Windsurf rules" icon="file-lines" href="https://docs.windsurf.com/windsurf/cascade/memories">
+    Explore advanced rule configurations
+  </Card>
+  <Card title="Mintlify docs" icon="book-open" href="https://mintlify.com/docs">
+    Read the full Mintlify documentation
+  </Card>
+  <Card title="Example rules" icon="code" href="https://windsurf.com/editor/directory">
+    Browse community rule templates
+  </Card>
+</CardGroup>
